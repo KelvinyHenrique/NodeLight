@@ -27,9 +27,10 @@ client.on("connect", function () {
 });
 
 io.on("connection", (socket) => {
-  socket.on("chat message", (msg) => {
+  socket.on("light-change", (msg) => {
     if (mqttConnected) {
       client.publish("qwgsdfgf8672348602436qe/office/light", msg);
+      io.sockets.emit("light-change", msg);
     }
   });
 });
