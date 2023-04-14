@@ -6,7 +6,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:prod": "node ./src/server.ts"
+    "start:dev": "node-ts ./src/server.ts",
+    "start:prod": "node ./dist/app.js",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
