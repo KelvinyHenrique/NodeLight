@@ -11,6 +11,11 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
+type User = {
+  id: string;
+  remoteAddress: string;
+};
+
 const app = express();
 const server = http.createServer(app);
 const io = new SocketIOServer(server);
@@ -18,6 +23,7 @@ const client = mqtt.connect("mqtt://broker.emqx.io:1883");
 const mqttTopic = "qwgsdfgf8672348602436qe/office/light";
 let mqttConnected = false;
 let currentLightColor = "#000000";
+let connectedUsers:User[] = [];
 
 app.get("/", (req: Request, res: Response) => {
   const filePath = path.join(__dirname, "../public/index.html");
@@ -37,6 +43,13 @@ client.on("connect", () => {
 });
 
 io.on("connection", (socket: Socket) => {
+  console.log(`Client connected: ${socket.id} from ${socket.handshake.address}`);
+    const user = {
+      id: socket.id,
+      remoteAddress: socket.handshake.address,
+    };
+
+  connectedUsers.push(user);
   socket.on("light-change", (msg: any) => {
     if (mqttConnected) {
       client.publish(mqttTopic, msg);
@@ -45,6 +58,7 @@ io.on("connection", (socket: Socket) => {
       // Save the current light color
       currentLightColor = msg;
     }
+    
   });
 
   socket.on("get-light-color", () => {
@@ -52,8 +66,19 @@ io.on("connection", (socket: Socket) => {
       socket.emit("light-change", currentLightColor);
       console.log("Sent light color to client");
     }
-  }
-  );
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected");
+    connectedUsers = connectedUsers.filter((user) => user.id !== socket.id);
+    io.sockets.emit("connected-new-user", JSON.stringify(connectedUsers));
+  });
+
+  socket.on("get-connected-users", () => {
+    console.log("Sending connected users to client");
+    
+      io.sockets.emit("connected-new-user", JSON.stringify(connectedUsers));
+  });
     
 });
 

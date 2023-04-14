@@ -15,21 +15,24 @@
             width: 100%;
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
             justify-content: center;
         }
 
-        .box {
-            width: 100%;
+        .box-picker,
+        .box-connected-users {
+            width: 50%;
             max-width: 500px;
             display: flex;
+            height: 400px;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             background-color: #efefef;
             padding: 1rem;
             box-shadow: 0 0 0.5rem 0.5rem rgba(0, 0, 0, 0.1);
+            margin: 0 1rem;
 
         }
 
@@ -84,7 +87,7 @@
 
 <body>
     <div class="container">
-        <div class="box">
+        <div class="box-picker">
             <h1>Light Control System</h1>
             <div class="current-color">
                 <h1>Current Color</h1>
@@ -97,23 +100,31 @@
             </div>
         </div>
 
-    </div>
+        <div class="box-connected-users">
+            <h1>Connected Users</h1>
+            <div class="connected-users">
+                <ul id="connectedUsers">
+                    <li>Buscando</li>
+                </ul>
+            </div>
+
+        </div>
 
 </body>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    var socket = io();
-    var input = document.getElementById('colorPicker');
+    const socket = io();
+    const input = document.getElementById('colorPicker');
 
     // get the current color from the server
     socket.emit('get-light-color', 'get-light-color');
     socket.on('light-change', function (msg) {
         // parse the message
-        var data = JSON.parse(msg);
+        const data = JSON.parse(msg);
 
         // transform the data to hex
-        var hex = '#' + ((1 << 24) + (data.red << 16) + (data.green << 8) + data.blue).toString(16).slice(1);
+        const hex = '#' + ((1 << 24) + (data.red << 16) + (data.green << 8) + data.blue).toString(16).slice(1);
 
         // update the input
         input.value = hex;
@@ -126,24 +137,43 @@
 
     });
 
+    // get the connected users from the server
+    socket.emit('get-connected-users', 'get-connected-users');
+    socket.on('connected-new-user', function (msg) {
+        // parse the message
+        const data = JSON.parse(msg);
+
+        // update the connected users
+        const connectedUsers = document.getElementById('connectedUsers');
+        connectedUsers.innerHTML = '';
+        data.forEach(function (user) {
+            const li = document.createElement('li');
+            // create span with the user name and remote address
+            const span = document.createElement('span');
+            span.innerHTML = 'Id:' + user.id + ' -  Remote Address: ' + user.remoteAddress;
+            li.appendChild(span);
+            connectedUsers.appendChild(li);
+        });
+    });
+
     input.addEventListener('input', function () {
-        var hex = input.value;
+        const hex = input.value;
 
         // update the current color
         document.getElementById('currentColor').innerHTML = hex;
 
         // transform the hex to rgb
-        var rgb = hexToRgb(hex);
+        const rgb = hexToRgb(hex);
 
         // send the data to the server
         socket.emit('light-change', JSON.stringify(rgb));
     });
 
     function hexToRgb(hex) {
-        var bigint = parseInt(hex.replace("#", ""), 16);
-        var r = (bigint >> 16) & 255;
-        var g = (bigint >> 8) & 255;
-        var b = bigint & 255;
+        const bigint = parseInt(hex.replace("#", ""), 16);
+        const r = (bigint >> 16) & 255;
+        const g = (bigint >> 8) & 255;
+        const b = bigint & 255;
 
         return {
             red: r,
