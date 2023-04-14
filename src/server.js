@@ -6,6 +6,8 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const mqtt = require("mqtt");
 
+require("dotenv").config();
+
 const io = new Server(server);
 
 const client = mqtt.connect("mqtt://broker.emqx.io:1883");
@@ -32,6 +34,6 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log("listening on *:3000");
+server.listen(process.env.PORT || 3000, () => {
+  console.log(`listening on 'http://localhost:${process.env.PORT || 3000}'`);
 });
