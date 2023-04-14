@@ -55,7 +55,6 @@ io.on("connection", (socket: Socket) => {
       client.publish(mqttTopic, msg);
       io.sockets.emit("light-change", msg);
       console.log("Sent light color to MQTT");
-      // Save the current light color
       currentLightColor = msg;
     }
     

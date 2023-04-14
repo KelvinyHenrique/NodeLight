@@ -82,6 +82,23 @@
         #currentColor {
             font-size: 2rem;
         }
+
+        #connectedUsers {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .box-picker,
+            .box-connected-users {
+                width: 80%;
+                margin-top: 3rem;
+            }
+        }
     </style>
 </head>
 
@@ -96,7 +113,7 @@
 
             <div class="color-picker">
                 <h1>Color Picker</h1>
-                <input type="color" id="colorPicker" name="colorPicker" value="#ff0000">
+                <input type="color" id="colorPicker" name="colorPicker" value="#7159c1">
             </div>
         </div>
 
@@ -116,39 +133,28 @@
 <script>
     const socket = io();
     const input = document.getElementById('colorPicker');
-
-    // get the current color from the server
     socket.emit('get-light-color', 'get-light-color');
     socket.on('light-change', function (msg) {
-        // parse the message
         const data = JSON.parse(msg);
 
-        // transform the data to hex
         const hex = '#' + ((1 << 24) + (data.red << 16) + (data.green << 8) + data.blue).toString(16).slice(1);
 
-        // update the input
         input.value = hex;
 
-        // update the current color
         document.getElementById('currentColor').innerHTML = hex;
 
-        // update the current color
         document.getElementById('currentColor').innerHTML = hex;
 
     });
-
-    // get the connected users from the server
     socket.emit('get-connected-users', 'get-connected-users');
     socket.on('connected-new-user', function (msg) {
-        // parse the message
         const data = JSON.parse(msg);
 
-        // update the connected users
         const connectedUsers = document.getElementById('connectedUsers');
         connectedUsers.innerHTML = '';
         data.forEach(function (user) {
             const li = document.createElement('li');
-            // create span with the user name and remote address
+
             const span = document.createElement('span');
             span.innerHTML = 'Id:' + user.id + ' -  Remote Address: ' + user.remoteAddress;
             li.appendChild(span);
@@ -159,13 +165,10 @@
     input.addEventListener('input', function () {
         const hex = input.value;
 
-        // update the current color
         document.getElementById('currentColor').innerHTML = hex;
 
-        // transform the hex to rgb
         const rgb = hexToRgb(hex);
 
-        // send the data to the server
         socket.emit('light-change', JSON.stringify(rgb));
     });
 
