@@ -7,7 +7,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "node-ts ./src/server.ts",
-    "start:prod": "node ./dist/app.js",
+    "start:prod": "npm run build && node ./dist/app.js",
     "build": "tsc"
   },
   "keywords": [],
